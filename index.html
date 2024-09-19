@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Runners Timer</title>
+    <style>
+        .runner {
+            margin-bottom: 10px;
+        }
+        .runner-name {
+            font-weight: bold;
+        }
+        .timer {
+            font-size: 1.2em;
+        }
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Multi-Runner Timer</h1>
+
+<!-- Start button for the global timer -->
+<button id="startButton">Start Race</button>
+<button id="resetButton">Reset</button>
+
+<div id="runnersContainer">
+    <!-- Runner rows will be injected here -->
+</div>
+
+<script>
+    // Array to hold runners' data
+    let runners = [
+        { name: 'Runner 1', time: null, isRunning: true },
+        { name: 'Runner 2', time: null, isRunning: true },
+        { name: 'Runner 3', time: null, isRunning: true },
+    ];
+
+    let startTime;
+    let interval;
+
+    // Function to initialize the runner's display
+    function renderRunners() {
+        const container = document.getElementById('runnersContainer');
+        container.innerHTML = ''; // Clear previous content
+
+        runners.forEach((runner, index) => {
+            const runnerDiv = document.createElement('div');
+            runnerDiv.classList.add('runner');
+
+            const nameSpan = document.createElement('span');
+            nameSpan.classList.add('runner-name');
+            nameSpan.textContent = runner.name;
+
+            const timerSpan = document.createElement('span');
+            timerSpan.classList.add('timer');
+            timerSpan.id = `timer-${index}`;
+            timerSpan.textContent = '00:00:00';
+
+            const stopButton = document.createElement('button');
+            stopButton.textContent = 'Stop';
+            stopButton.addEventListener('click', () => stopTimer(index));
+
+            runnerDiv.appendChild(nameSpan);
+            runnerDiv.appendChild(timerSpan);
+            runnerDiv.appendChild(stopButton);
+            container.appendChild(runnerDiv);
+        });
+    }
+
+    // Function to start the race
+    function startRace() {
+        startTime = Date.now();
+        interval = setInterval(updateTimers, 100);
+    }
+
+    // Function to update the timers for each runner
+    function updateTimers() {
+        const currentTime = Date.now();
+        runners.forEach((runner, index) => {
+            if (runner.isRunning) {
+                const elapsedTime = currentTime - startTime;
+                document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
+            }
+        });
+    }
+
+    // Function to stop the timer for a specific runner
+    function stopTimer(index) {
+        if (runners[index].isRunning) {
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - startTime;
+            runners[index].time = elapsedTime;
+            runners[index].isRunning = false;
+            document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
+        }
+    }
+
+    // Function to format time (milliseconds to hh:mm:ss)
+    function formatTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+        const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    // Function to reset the race
+    function resetRace() {
+        clearInterval(interval);
+        runners.forEach(runner => {
+            runner.time = null;
+            runner.isRunning = true;
+        });
+        renderRunners();
+    }
+
+    // Event listeners for buttons
+    document.getElementById('startButton').addEventListener('click', startRace);
+    document.getElementById('resetButton').addEventListener('click', resetRace);
+
+    // Initialize the runners' display
+    renderRunners();
+</script>
+
+</body>
+</html>
