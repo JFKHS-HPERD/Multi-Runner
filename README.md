@@ -1,7 +1,3 @@
-Here’s a basic **README** file for your multi-runner timer app:
-
----
-
 # Multi-Runner Timer
 
 ## Overview
