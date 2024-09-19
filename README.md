@@ -1,3 +1,4 @@
+---
 # Multi-Runner Timer
 
 ## Overview
@@ -61,5 +62,3 @@ Each runner is an object with:
 This project is open-source and free to use under the [MIT License](https://opensource.org/licenses/MIT).
 
 ---
-
-This README should be placed in the root of the project directory, alongside your HTML file. Let me know if you'd like to include additional sections like "Known Issues" or "Contributors"!
