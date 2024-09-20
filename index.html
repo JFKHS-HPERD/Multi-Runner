@@ -14,8 +14,29 @@
         .timer {
             font-size: 1.2em;
         }
+        #startButton {
+            background-color: green;
+            color: white;
+            padding: 10px;
+        }
+        .stopButton {
+            background-color: red;
+            color: white;
+        }
+        .doneButton {
+            background-color: grey;
+            color: white;
+        }
         button {
             margin-left: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
         }
     </style>
 </head>
@@ -46,9 +67,21 @@
 <button id="exportCsvButton">Export to CSV</button>
 <button id="exportTxtButton">Export to TXT</button>
 
-<div id="runnersContainer">
-    <!-- Runner rows will be injected here -->
-</div>
+<br><br>
+
+<!-- Runner list in a table format -->
+<table id="runnersTable">
+    <thead>
+        <tr>
+            <th>Runner Name</th>
+            <th>Timer</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Runner rows will be injected here -->
+    </tbody>
+</table>
 
 <script>
     let runners = [];
@@ -57,30 +90,32 @@
 
     // Function to render the list of runners
     function renderRunners() {
-        const container = document.getElementById('runnersContainer');
-        container.innerHTML = ''; // Clear previous content
+        const tbody = document.querySelector('#runnersTable tbody');
+        tbody.innerHTML = ''; // Clear previous content
 
         runners.forEach((runner, index) => {
-            const runnerDiv = document.createElement('div');
-            runnerDiv.classList.add('runner');
+            const row = document.createElement('tr');
 
-            const nameSpan = document.createElement('span');
-            nameSpan.classList.add('runner-name');
-            nameSpan.textContent = runner.name;
+            const nameTd = document.createElement('td');
+            nameTd.classList.add('runner-name');
+            nameTd.textContent = runner.name;
 
-            const timerSpan = document.createElement('span');
-            timerSpan.classList.add('timer');
-            timerSpan.id = `timer-${index}`;
-            timerSpan.textContent = '00:00:00';
+            const timerTd = document.createElement('td');
+            timerTd.classList.add('timer');
+            timerTd.id = `timer-${index}`;
+            timerTd.textContent = '00:00:00';
 
+            const buttonTd = document.createElement('td');
             const stopButton = document.createElement('button');
+            stopButton.classList.add('stopButton');
             stopButton.textContent = 'Stop';
             stopButton.addEventListener('click', () => stopTimer(index));
+            buttonTd.appendChild(stopButton);
 
-            runnerDiv.appendChild(nameSpan);
-            runnerDiv.appendChild(timerSpan);
-            runnerDiv.appendChild(stopButton);
-            container.appendChild(runnerDiv);
+            row.appendChild(nameTd);
+            row.appendChild(timerTd);
+            row.appendChild(buttonTd);
+            tbody.appendChild(row);
         });
     }
 
@@ -111,7 +146,8 @@
             reader.onload = function(e) {
                 const lines = e.target.result.split('\n');
                 lines.forEach(line => {
-                    const runnerName = line.trim();
+                    let runnerName = line.trim();
+                    runnerName = runnerName.replace(/['"]+/g, ''); // Remove quotations
                     if (runnerName) {
                         addRunner(runnerName);
                     }
@@ -159,9 +195,11 @@
             // Update the timer display
             document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
             
-            // Change the "Stop" button to "Done"
-            const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
+            // Change the "Stop" button to "Done" and change its color to grey
+            const stopButton = document.querySelectorAll('.stopButton')[index];
             stopButton.textContent = 'Done';
+            stopButton.classList.remove('stopButton');
+            stopButton.classList.add('doneButton');
             stopButton.disabled = true;
         }
     }
@@ -183,8 +221,10 @@
             runner.time = null;  // Reset the internal time
             runner.isRunning = true;  // Allow timers to start again
             document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
-            const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
+            const stopButton = document.querySelectorAll('button')[index];
             stopButton.textContent = 'Stop';  // Reset button text
+            stopButton.classList.remove('doneButton');
+            stopButton.classList.add('stopButton');
             stopButton.disabled = false;  // Re-enable the stop button
         });
 
@@ -222,7 +262,7 @@
     // Function to export data to a TXT file
     function exportToTxt() {
         const classPeriod = document.getElementById('classPeriod').value.trim();
-        let fileName = classPeriod ? `runners_times_${classPeriod}.txt` : 'runners_times.txt';
+        let fileName = classPeriod ? `runners_times_${classPeriod}.txt';
 
         let txtContent = "Name\t\tTime\n";
         runners.forEach(runner => {
