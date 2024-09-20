@@ -152,7 +152,7 @@
 
     // Function to render the list of runners
     function renderRunners() {
-        const tbody = document.querySelector('#runnersTable tbody');
+        const tbody = document.getElementById('runnerTableBody');
         tbody.innerHTML = ''; // Clear previous content
 
         runners.forEach((runner, index) => {
