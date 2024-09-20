@@ -83,12 +83,8 @@
 <div class="button-container">
     <button id="startButton">Start Race</button>
     <div>
-        <button id="resetTimesButton">Reset Times</button>
-        <button id="resetListButton">Reset List</button>
-        <div>
         <button id="exportCsvButton">Export to CSV</button>
         <button id="exportTxtButton">Export to TXT</button>
-        </div>
     </div>
 </div>
 
@@ -108,7 +104,14 @@
         <!-- Runner rows will be injected here -->
     </tbody>
 </table>
-
+<!-- Start, Reset Times, Reset List, and Export buttons -->
+<div class="button-container">
+    <button id="startButton">Start Race</button>
+    <div>
+        <button id="exportCsvButton">Export to CSV</button>
+        <button id="exportTxtButton">Export to TXT</button>
+    </div>
+</div>
 <script>
     let runners = [];
     let startTime;
