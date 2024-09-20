@@ -170,13 +170,17 @@
     }
 
     // Function to reset only the timers
-    function resetTimes() {
-        runners.forEach((runner, index) => {
-            if (runner.isRunning) {
-                document.getElementById(`timer-${index}`).textContent = '00:00:00';
-            }
-        });
-    }
+function resetTimes() {
+    runners.forEach((runner, index) => {
+        runner.time = null;  // Reset the internal time
+        runner.isRunning = true;  // Allow timers to start again
+        document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
+        const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
+        stopButton.textContent = 'Stop';  // Reset button text
+        stopButton.disabled = false;  // Re-enable the stop button
+    });
+}
+
 
     // Function to reset the list of runners
     function resetList() {
