@@ -14,6 +14,17 @@
         .timer {
             font-size: 1.2em;
         }
+        
+        .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.button-container button {
+    margin-left: 10px; /* Add some space between buttons */
+}
+
         #startButton {
             background-color: green;
             color: white;
@@ -69,13 +80,16 @@
 <br><br>
 
 <!-- Start, Reset Times, Reset List, and Export buttons -->
-<button id="startButton">Start Race</button>
-<br><br>
-<button id="resetTimesButton">Reset Times</button>
-<button id="resetListButton">Reset List</button>
-<br><br>
-<button id="exportCsvButton">Export to CSV</button>
-<button id="exportTxtButton">Export to TXT</button>
+<div class="button-container">
+    <button id="startButton">Start Race</button>
+    <div>
+        <button id="resetTimesButton">Reset Times</button>
+        <button id="resetListButton">Reset List</button>
+        <button id="exportCsvButton">Export to CSV</button>
+        <button id="exportTxtButton">Export to TXT</button>
+    </div>
+</div>
+
 
 <br><br>
 
