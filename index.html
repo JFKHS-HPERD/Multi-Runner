@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multiple Runners Timer</title>
     <style>
-        .banner {
-    width: 100%;
-    max-width: 480px; /* Optional: limit max width */
-    height: auto; /* Maintain aspect ratio */
+       .banner-container {
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    margin: 20px 0; /* Optional: Add some margin for spacing */
 }
         .runner {
             margin-bottom: 10px;
@@ -65,7 +65,9 @@
     </style>
 </head>
 <body>
-<img src="islanders.png" alt="Islanders" class="banner">
+<div class="banner-container">
+    <img src="islanders.png" alt="Islanders" class="banner">
+</div>
 <h1>Multi-Runner Timer</h1>
 
 <!-- Input field for Class Period -->
