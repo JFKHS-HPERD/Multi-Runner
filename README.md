@@ -1,4 +1,3 @@
----
 # Multi-Runner Timer
 
 ## Overview
