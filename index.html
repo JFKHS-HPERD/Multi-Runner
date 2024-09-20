@@ -108,6 +108,7 @@
             const buttonTd = document.createElement('td');
             const stopButton = document.createElement('button');
             stopButton.classList.add('stopButton');
+            stopButton.id = `stopButton-${index}`;
             stopButton.textContent = 'Stop';
             stopButton.addEventListener('click', () => stopTimer(index));
             buttonTd.appendChild(stopButton);
@@ -196,7 +197,7 @@
             document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
             
             // Change the "Stop" button to "Done" and change its color to grey
-            const stopButton = document.querySelectorAll('.stopButton')[index];
+            const stopButton = document.getElementById(`stopButton-${index}`);
             stopButton.textContent = 'Done';
             stopButton.classList.remove('stopButton');
             stopButton.classList.add('doneButton');
@@ -221,7 +222,7 @@
             runner.time = null;  // Reset the internal time
             runner.isRunning = true;  // Allow timers to start again
             document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
-            const stopButton = document.querySelectorAll('button')[index];
+            const stopButton = document.getElementById(`stopButton-${index}`);
             stopButton.textContent = 'Stop';  // Reset button text
             stopButton.classList.remove('doneButton');
             stopButton.classList.add('stopButton');
@@ -260,7 +261,9 @@
     }
 
     // Function to export data to a TXT file
-    function exportToTxt() {
+    function exportToTxt()
+
+{
         const classPeriod = document.getElementById('classPeriod').value.trim();
         let fileName = classPeriod ? `runners_times_${classPeriod}.txt` : 'runners_times.txt';
 
