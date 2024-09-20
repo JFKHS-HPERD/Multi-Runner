@@ -90,30 +90,32 @@
 
     // Function to render the list of runners
     function renderRunners() {
-        const container = document.getElementById('runnersContainer');
-        container.innerHTML = ''; // Clear previous content
+        const tbody = document.querySelector('#runnersTable tbody');
+        tbody.innerHTML = ''; // Clear previous content
 
         runners.forEach((runner, index) => {
-            const runnerDiv = document.createElement('div');
-            runnerDiv.classList.add('runner');
+            const row = document.createElement('tr');
 
-            const nameSpan = document.createElement('span');
-            nameSpan.classList.add('runner-name');
-            nameSpan.textContent = runner.name;
+            const nameTd = document.createElement('td');
+            nameTd.classList.add('runner-name');
+            nameTd.textContent = runner.name;
 
-            const timerSpan = document.createElement('span');
-            timerSpan.classList.add('timer');
-            timerSpan.id = `timer-${index}`;
-            timerSpan.textContent = '00:00:00';
+            const timerTd = document.createElement('td');
+            timerTd.classList.add('timer');
+            timerTd.id = `timer-${index}`;
+            timerTd.textContent = '00:00:00';
 
+            const buttonTd = document.createElement('td');
             const stopButton = document.createElement('button');
+            stopButton.classList.add('stopButton');
             stopButton.textContent = 'Stop';
             stopButton.addEventListener('click', () => stopTimer(index));
+            buttonTd.appendChild(stopButton);
 
-            runnerDiv.appendChild(nameSpan);
-            runnerDiv.appendChild(timerSpan);
-            runnerDiv.appendChild(stopButton);
-            container.appendChild(runnerDiv);
+            row.appendChild(nameTd);
+            row.appendChild(timerTd);
+            row.appendChild(buttonTd);
+            tbody.appendChild(row);
         });
     }
 
@@ -144,7 +146,8 @@
             reader.onload = function(e) {
                 const lines = e.target.result.split('\n');
                 lines.forEach(line => {
-                    const runnerName = line.trim();
+                    let runnerName = line.trim();
+                    runnerName = runnerName.replace(/['"]+/g, ''); // Remove quotations
                     if (runnerName) {
                         addRunner(runnerName);
                     }
