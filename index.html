@@ -195,9 +195,11 @@
             // Update the timer display
             document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
             
-            // Change the "Stop" button to "Done"
-            const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
+            // Change the "Stop" button to "Done" and change its color to grey
+            const stopButton = document.querySelectorAll('.stopButton')[index];
             stopButton.textContent = 'Done';
+            stopButton.classList.remove('stopButton');
+            stopButton.classList.add('doneButton');
             stopButton.disabled = true;
         }
     }
@@ -219,8 +221,10 @@
             runner.time = null;  // Reset the internal time
             runner.isRunning = true;  // Allow timers to start again
             document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
-            const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
+            const stopButton = document.querySelectorAll('button')[index];
             stopButton.textContent = 'Stop';  // Reset button text
+            stopButton.classList.remove('doneButton');
+            stopButton.classList.add('stopButton');
             stopButton.disabled = false;  // Re-enable the stop button
         });
 
@@ -265,6 +269,7 @@
             if (!runner.isRunning && runner.time !== null) {
                 txtContent += `${runner.name}\t\t${formatTime(runner.time)}\n`;
             }
+
         });
 
         const blob = new Blob([txtContent], { type: 'text/plain' });
