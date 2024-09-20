@@ -121,41 +121,22 @@
         }
     });
 
-// Function to reset only the timers
-function resetTimes() {
-    clearInterval(interval);  // Stop the timers from updating
-
-    runners.forEach((runner, index) => {
-        runner.time = null;  // Reset the internal time
-        runner.isRunning = true;  // Allow timers to start again
-        document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
-        const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
-        stopButton.textContent = 'Stop';  // Reset button text
-        stopButton.disabled = false;  // Re-enable the stop button
-    });
-
-    startTime = null;  // Clear the start time
-}
-    
     // Function to start the race
     function startRace() {
         if (runners.length === 0) {
             alert('Please add at least one runner before starting the race.');
             return;
         }
-        startTime = Date.now();
-        interval = setInterval(updateTimers, 100);
+        
+        // If a race is already running, stop it
+        if (interval) {
+            clearInterval(interval);  // Stop the previous timer
+        }
+
+        startTime = Date.now();  // Capture the new start time
+        interval = setInterval(updateTimers, 100);  // Start updating the timers again
     }
 
-    // If a race is already running, stop it
-    if (interval) {
-        clearInterval(interval);  // Stop the previous timer
-    }
-
-    startTime = Date.now();  // Capture the new start time
-    interval = setInterval(updateTimers, 100);  // Start updating the timers again
-}
-    
     // Function to update the timers for each runner
     function updateTimers() {
         const currentTime = Date.now();
@@ -166,7 +147,7 @@ function resetTimes() {
             }
         });
     }
-    
+
     // Function to stop the timer for a specific runner
     function stopTimer(index) {
         if (runners[index].isRunning) {
@@ -195,17 +176,20 @@ function resetTimes() {
     }
 
     // Function to reset only the timers
-function resetTimes() {
-    runners.forEach((runner, index) => {
-        runner.time = null;  // Reset the internal time
-        runner.isRunning = true;  // Allow timers to start again
-        document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
-        const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
-        stopButton.textContent = 'Stop';  // Reset button text
-        stopButton.disabled = false;  // Re-enable the stop button
-    });
-}
+    function resetTimes() {
+        clearInterval(interval);  // Stop the timers from updating
 
+        runners.forEach((runner, index) => {
+            runner.time = null;  // Reset the internal time
+            runner.isRunning = true;  // Allow timers to start again
+            document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
+            const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
+            stopButton.textContent = 'Stop';  // Reset button text
+            stopButton.disabled = false;  // Re-enable the stop button
+        });
+
+        startTime = null;  // Clear the start time
+    }
 
     // Function to reset the list of runners
     function resetList() {
