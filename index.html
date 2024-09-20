@@ -23,13 +23,26 @@
 
 <h1>Multi-Runner Timer</h1>
 
+<!-- Input field for Class Period -->
+<label for="classPeriod">Class Period: </label>
+<input type="text" id="classPeriod" placeholder="Enter class period">
+
+<br><br>
+
 <!-- Input field and button to add runners -->
 <input type="text" id="runnerName" placeholder="Enter runner's name" />
 <button id="addRunnerButton">Add Runner</button>
 
-<!-- Start, Reset, and Export buttons -->
+<!-- File input for importing list of runners -->
+<input type="file" id="importRunnersFile" accept=".csv">
+<button id="importRunnersButton">Import Runners</button>
+
+<br><br>
+
+<!-- Start, Reset Times, Reset List, and Export buttons -->
 <button id="startButton">Start Race</button>
-<button id="resetButton">Reset</button>
+<button id="resetTimesButton">Reset Times</button>
+<button id="resetListButton">Reset List</button>
 <button id="exportCsvButton">Export to CSV</button>
 <button id="exportTxtButton">Export to TXT</button>
 
@@ -38,7 +51,6 @@
 </div>
 
 <script>
-    // Array to hold runners' data
     let runners = [];
     let startTime;
     let interval;
@@ -73,15 +85,41 @@
     }
 
     // Function to add a runner
-    function addRunner() {
-        const runnerNameInput = document.getElementById('runnerName');
-        const runnerName = runnerNameInput.value.trim();
+    function addRunner(runnerName) {
         if (runnerName) {
             runners.push({ name: runnerName, time: null, isRunning: true });
-            runnerNameInput.value = ''; // Clear input field
             renderRunners();
         }
     }
+
+    // Add runner via input field
+    document.getElementById('addRunnerButton').addEventListener('click', () => {
+        const runnerNameInput = document.getElementById('runnerName');
+        const runnerName = runnerNameInput.value.trim();
+        if (runnerName) {
+            addRunner(runnerName);
+            runnerNameInput.value = ''; // Clear input field
+        }
+    });
+
+    // Import list of runners from CSV file
+    document.getElementById('importRunnersButton').addEventListener('click', () => {
+        const fileInput = document.getElementById('importRunnersFile');
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n');
+                lines.forEach(line => {
+                    const runnerName = line.trim();
+                    if (runnerName) {
+                        addRunner(runnerName);
+                    }
+                });
+            };
+            reader.readAsText(file);
+        }
+    });
 
     // Function to start the race
     function startRace() {
@@ -111,7 +149,14 @@
             const elapsedTime = currentTime - startTime;
             runners[index].time = elapsedTime;
             runners[index].isRunning = false;
+            
+            // Update the timer display
             document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
+            
+            // Change the "Stop" button to "Done"
+            const stopButton = document.querySelectorAll('.runner')[index].querySelector('button');
+            stopButton.textContent = 'Done';
+            stopButton.disabled = true;
         }
     }
 
@@ -124,8 +169,17 @@
         return `${hours}:${minutes}:${seconds}`;
     }
 
-    // Function to reset the race
-    function resetRace() {
+    // Function to reset only the timers
+    function resetTimes() {
+        runners.forEach((runner, index) => {
+            if (runner.isRunning) {
+                document.getElementById(`timer-${index}`).textContent = '00:00:00';
+            }
+        });
+    }
+
+    // Function to reset the list of runners
+    function resetList() {
         clearInterval(interval);
         runners = [];
         renderRunners();
@@ -133,16 +187,20 @@
 
     // Function to export data to CSV
     function exportToCsv() {
+        const classPeriod = document.getElementById('classPeriod').value.trim();
+        let fileName = classPeriod ? `runners_times_${classPeriod}.csv` : 'runners_times.csv';
+
         let csvContent = "data:text/csv;charset=utf-8,Name,Time\n";
         runners.forEach(runner => {
             if (!runner.isRunning && runner.time !== null) {
                 csvContent += `${runner.name},${formatTime(runner.time)}\n`;
             }
         });
+
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "runners_times.csv");
+        link.setAttribute("download", fileName);
         document.body.appendChild(link); // Required for Firefox
         link.click();
         link.remove();
@@ -150,23 +208,27 @@
 
     // Function to export data to a TXT file
     function exportToTxt() {
+        const classPeriod = document.getElementById('classPeriod').value.trim();
+        let fileName = classPeriod ? `runners_times_${classPeriod}.txt` : 'runners_times.txt';
+
         let txtContent = "Name\t\tTime\n";
         runners.forEach(runner => {
             if (!runner.isRunning && runner.time !== null) {
                 txtContent += `${runner.name}\t\t${formatTime(runner.time)}\n`;
             }
         });
+
         const blob = new Blob([txtContent], { type: 'text/plain' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "runners_times.txt";
+        link.download = fileName;
         link.click();
     }
 
     // Event listeners for buttons
-    document.getElementById('addRunnerButton').addEventListener('click', addRunner);
     document.getElementById('startButton').addEventListener('click', startRace);
-    document.getElementById('resetButton').addEventListener('click', resetRace);
+    document.getElementById('resetTimesButton').addEventListener('click', resetTimes);
+    document.getElementById('resetListButton').addEventListener('click', resetList);
     document.getElementById('exportCsvButton').addEventListener('click', exportToCsv);
     document.getElementById('exportTxtButton').addEventListener('click', exportToTxt);
 
