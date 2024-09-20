@@ -103,7 +103,7 @@
 <button id="addRunnerButton">Add Runner</button>
 <br><br>
 <!-- File input for importing list of runners -->
-<input type="file" id="importRunnersFile" accept=".csv">
+<input type="file" id="importRunnersFile" accept=".csv, .txt">
     
 <br><br>
 
@@ -133,10 +133,11 @@
             <th>Action</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="runnerTableBody">
         <!-- Runner rows will be injected here -->
     </tbody>
 </table>
+    
 <!-- Start, Reset Times, Reset List, and Export buttons -->
 <div class="button-container">
     <div>
@@ -199,25 +200,44 @@
         }
     });
 
-    // Import list of runners from CSV file
-    document.getElementById('importRunnersButton').addEventListener('click', () => {
-        const fileInput = document.getElementById('importRunnersFile');
-        const file = fileInput.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const lines = e.target.result.split('\n');
-                lines.forEach(line => {
-                    let runnerName = line.trim();
-                    runnerName = runnerName.replace(/['"]+/g, ''); // Remove quotations
-                    if (runnerName) {
-                        addRunner(runnerName);
-                    }
-                });
-            };
-            reader.readAsText(file);
-        }
-    });
+   // Import list of runners from CSV or TXT file
+document.getElementById('importRunnersButton').addEventListener('click', () => {
+    const fileInput = document.getElementById('importRunnersFile');
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            const extension = file.name.split('.').pop().toLowerCase();
+            let lines;
+
+            if (extension === 'csv') {
+                lines = content.split('\n');  // CSV - split by lines first
+            } else if (extension === 'txt') {
+                lines = content.split('\n');  // TXT - split by lines
+            } else {
+                alert("Invalid file type. Please upload a CSV or TXT file.");
+                return;
+            }
+
+            lines.forEach(line => {
+                let runnerName;
+
+                if (extension === 'csv') {
+                    const columns = line.split(',');  // For CSV, split by commas
+                    runnerName = columns[0].replace(/['"]+/g, '').trim();  // Remove quotes and trim spaces
+                } else {
+                    runnerName = line.replace(/['"]+/g, '').trim();  // For TXT, just remove quotes and trim spaces
+                }
+
+                if (runnerName) {
+                    addRunner(runnerName);  // Add the runner to the list
+                }
+            });
+        };
+        reader.readAsText(file);
+    }
+});
 
     // Function to start the race
     function startRace() {
