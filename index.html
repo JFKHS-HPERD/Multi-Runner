@@ -23,9 +23,15 @@
 
 <h1>Multi-Runner Timer</h1>
 
-<!-- Start button for the global timer -->
+<!-- Input field and button to add runners -->
+<input type="text" id="runnerName" placeholder="Enter runner's name" />
+<button id="addRunnerButton">Add Runner</button>
+
+<!-- Start, Reset, and Export buttons -->
 <button id="startButton">Start Race</button>
 <button id="resetButton">Reset</button>
+<button id="exportCsvButton">Export to CSV</button>
+<button id="exportTxtButton">Export to TXT</button>
 
 <div id="runnersContainer">
     <!-- Runner rows will be injected here -->
@@ -33,16 +39,11 @@
 
 <script>
     // Array to hold runners' data
-    let runners = [
-        { name: 'Runner 1', time: null, isRunning: true },
-        { name: 'Runner 2', time: null, isRunning: true },
-        { name: 'Runner 3', time: null, isRunning: true },
-    ];
-
+    let runners = [];
     let startTime;
     let interval;
 
-    // Function to initialize the runner's display
+    // Function to render the list of runners
     function renderRunners() {
         const container = document.getElementById('runnersContainer');
         container.innerHTML = ''; // Clear previous content
@@ -71,8 +72,23 @@
         });
     }
 
+    // Function to add a runner
+    function addRunner() {
+        const runnerNameInput = document.getElementById('runnerName');
+        const runnerName = runnerNameInput.value.trim();
+        if (runnerName) {
+            runners.push({ name: runnerName, time: null, isRunning: true });
+            runnerNameInput.value = ''; // Clear input field
+            renderRunners();
+        }
+    }
+
     // Function to start the race
     function startRace() {
+        if (runners.length === 0) {
+            alert('Please add at least one runner before starting the race.');
+            return;
+        }
         startTime = Date.now();
         interval = setInterval(updateTimers, 100);
     }
@@ -111,18 +127,50 @@
     // Function to reset the race
     function resetRace() {
         clearInterval(interval);
-        runners.forEach(runner => {
-            runner.time = null;
-            runner.isRunning = true;
-        });
+        runners = [];
         renderRunners();
     }
 
+    // Function to export data to CSV
+    function exportToCsv() {
+        let csvContent = "data:text/csv;charset=utf-8,Name,Time\n";
+        runners.forEach(runner => {
+            if (!runner.isRunning && runner.time !== null) {
+                csvContent += `${runner.name},${formatTime(runner.time)}\n`;
+            }
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "runners_times.csv");
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+        link.remove();
+    }
+
+    // Function to export data to a TXT file
+    function exportToTxt() {
+        let txtContent = "Name\t\tTime\n";
+        runners.forEach(runner => {
+            if (!runner.isRunning && runner.time !== null) {
+                txtContent += `${runner.name}\t\t${formatTime(runner.time)}\n`;
+            }
+        });
+        const blob = new Blob([txtContent], { type: 'text/plain' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "runners_times.txt";
+        link.click();
+    }
+
     // Event listeners for buttons
+    document.getElementById('addRunnerButton').addEventListener('click', addRunner);
     document.getElementById('startButton').addEventListener('click', startRace);
     document.getElementById('resetButton').addEventListener('click', resetRace);
+    document.getElementById('exportCsvButton').addEventListener('click', exportToCsv);
+    document.getElementById('exportTxtButton').addEventListener('click', exportToTxt);
 
-    // Initialize the runners' display
+    // Initialize the app by rendering any existing runners
     renderRunners();
 </script>
 
