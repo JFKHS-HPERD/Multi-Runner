@@ -325,20 +325,15 @@ function saveRunnersToLocalStorage() {
         return `${hours}:${minutes}:${seconds}`;
     }
 
-    // Function to reset only the timers
-    function resetList() {
-    clearInterval(interval);
-    runners = [];
-    localStorage.removeItem('runners'); // Clear the runners data from local storage
-    renderRunners();
-        }
-
-    // Function to reset the list of runners
-    function resetList() {
-        clearInterval(interval);
-        runners = [];
-        renderRunners();
-    }
+   // Function to reset the list of runners
+function resetList() {
+    clearInterval(interval); // Stop any running timers
+    runners = []; // Clear the runners array
+    localStorage.removeItem('runners'); // Remove runners data from local storage
+    console.log("Local storage cleared"); // Log to ensure the storage is cleared
+    startTime = null; // Clear the start time
+    renderRunners(); // Re-render the empty list
+}
 
     // Function to export data to CSV
     function exportToCsv() {
