@@ -205,11 +205,13 @@ window.addEventListener('beforeunload', (event) => {
 
     // Function to add a runner
     function addRunner(runnerName) {
-        if (runnerName) {
-            runners.push({ name: runnerName, time: null, isRunning: true });
-            renderRunners();
-        }
+    if (runnerName) {
+        runners.push({ name: runnerName, time: null, isRunning: true });
+        renderRunners();
+        saveRunnersToLocalStorage(); // Save updated list to local storage
     }
+}
+
 
     // Add runner via input field
     document.getElementById('addRunnerButton').addEventListener('click', () => {
@@ -289,23 +291,30 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
 
     // Function to stop the timer for a specific runner
     function stopTimer(index) {
-        if (runners[index].isRunning) {
-            const currentTime = Date.now();
-            const elapsedTime = currentTime - startTime;
-            runners[index].time = elapsedTime;
-            runners[index].isRunning = false;
-            
-            // Update the timer display
-            document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
-            
-            // Change the "Stop" button to "Done" and change its color to grey
-            const stopButton = document.getElementById(`stopButton-${index}`);
-            stopButton.textContent = 'Done';
-            stopButton.classList.remove('stopButton');
-            stopButton.classList.add('doneButton');
-            stopButton.disabled = true;
-        }
+    if (runners[index].isRunning) {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - startTime;
+        runners[index].time = elapsedTime;
+        runners[index].isRunning = false;
+        
+        // Update the timer display
+        document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
+        
+        // Change the "Stop" button to "Done" and change its color to grey
+        const stopButton = document.getElementById(`stopButton-${index}`);
+        stopButton.textContent = 'Done';
+        stopButton.classList.remove('stopButton');
+        stopButton.classList.add('doneButton');
+        stopButton.disabled = true;
+
+        // Save runners to local storage
+        saveRunnersToLocalStorage();
     }
+}
+
+function saveRunnersToLocalStorage() {
+    localStorage.setItem('runners', JSON.stringify(runners));
+}
 
     // Function to format time (milliseconds to hh:mm:ss)
     function formatTime(ms) {
@@ -317,22 +326,12 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
     }
 
     // Function to reset only the timers
-    function resetTimes() {
-        clearInterval(interval);  // Stop the timers from updating
-
-        runners.forEach((runner, index) => {
-            runner.time = null;  // Reset the internal time
-            runner.isRunning = true;  // Allow timers to start again
-            document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
-            const stopButton = document.getElementById(`stopButton-${index}`);
-            stopButton.textContent = 'Stop';  // Reset button text
-            stopButton.classList.remove('doneButton');
-            stopButton.classList.add('stopButton');
-            stopButton.disabled = false;  // Re-enable the stop button
-        });
-
-        startTime = null;  // Clear the start time
-    }
+    function resetList() {
+    clearInterval(interval);
+    runners = [];
+    localStorage.removeItem('runners'); // Clear the runners data from local storage
+    renderRunners();
+        }
 
     // Function to reset the list of runners
     function resetList() {
@@ -393,6 +392,32 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
 
     // Initialize the app by rendering any existing runners
     renderRunners();
+
+    
+// Function to restore runners from local storage
+    function loadRunnersFromLocalStorage() {
+        const savedRunners = localStorage.getItem('runners');
+        if (savedRunners) {
+            runners = JSON.parse(savedRunners);
+            renderRunners();
+            runners.forEach((runner, index) => {
+                if (!runner.isRunning && runner.time !== null) {
+                    document.getElementById(`timer-${index}`).textContent = formatTime(runner.time);
+                    const stopButton = document.getElementById(`stopButton-${index}`);
+                    stopButton.textContent = 'Done';
+                    stopButton.classList.remove('stopButton');
+                    stopButton.classList.add('doneButton');
+                    stopButton.disabled = true;
+                }
+            });
+        }
+    }
+
+    // Restore runners on page load
+    window.onload = function() {
+        loadRunnersFromLocalStorage();
+    };
+
 </script>
 
 </body>
