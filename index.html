@@ -165,12 +165,11 @@
     let interval;
 
     // Prevent accidental page refresh or close
-window.addEventListener('beforeunload', (event) => {
-    event.preventDefault();
-    event.returnValue = '';  // Shows a confirmation dialog to the user
-});
+    window.addEventListener('beforeunload', (event) => {
+        event.preventDefault();
+        event.returnValue = '';  // Shows a confirmation dialog to the user
+    });
 
-    
     // Function to render the list of runners
     function renderRunners() {
         const tbody = document.getElementById('runnerTableBody');
@@ -186,13 +185,14 @@ window.addEventListener('beforeunload', (event) => {
             const timerTd = document.createElement('td');
             timerTd.classList.add('timer');
             timerTd.id = `timer-${index}`;
-            timerTd.textContent = '00:00:00';
+            timerTd.textContent = runner.time ? formatTime(runner.time) : '00:00:00';
 
             const buttonTd = document.createElement('td');
             const stopButton = document.createElement('button');
-            stopButton.classList.add('stopButton');
+            stopButton.classList.add(runner.isRunning ? 'stopButton' : 'doneButton');
             stopButton.id = `stopButton-${index}`;
-            stopButton.textContent = 'Stop';
+            stopButton.textContent = runner.isRunning ? 'Stop' : 'Done';
+            stopButton.disabled = !runner.isRunning;
             stopButton.addEventListener('click', () => stopTimer(index));
             buttonTd.appendChild(stopButton);
 
@@ -208,6 +208,21 @@ window.addEventListener('beforeunload', (event) => {
         if (runnerName) {
             runners.push({ name: runnerName, time: null, isRunning: true });
             renderRunners();
+            saveToLocalStorage();
+        }
+    }
+
+    // Save runners to localStorage
+    function saveToLocalStorage() {
+        localStorage.setItem('runners', JSON.stringify(runners));
+    }
+
+    // Restore runners from localStorage on page load
+    function loadFromLocalStorage() {
+        const savedRunners = localStorage.getItem('runners');
+        if (savedRunners) {
+            runners = JSON.parse(savedRunners);
+            renderRunners();
         }
     }
 
@@ -221,44 +236,34 @@ window.addEventListener('beforeunload', (event) => {
         }
     });
 
-   // Import list of runners from CSV or TXT file
-document.getElementById('importRunnersButton').addEventListener('click', () => {
-    const fileInput = document.getElementById('importRunnersFile');
-    const file = fileInput.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const content = e.target.result;
-            const extension = file.name.split('.').pop().toLowerCase();
-            let lines;
+    // Import list of runners from CSV or TXT file
+    document.getElementById('importRunnersButton').addEventListener('click', () => {
+        const fileInput = document.getElementById('importRunnersFile');
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const extension = file.name.split('.').pop().toLowerCase();
+                let lines;
 
-            if (extension === 'csv') {
-                lines = content.split('\n');  // CSV - split by lines first
-            } else if (extension === 'txt') {
-                lines = content.split('\n');  // TXT - split by lines
-            } else {
-                alert("Invalid file type. Please upload a CSV or TXT file.");
-                return;
-            }
-
-            lines.forEach(line => {
-                let runnerName;
-
-                if (extension === 'csv') {
-                    const columns = line.split(',');  // For CSV, split by commas
-                    runnerName = columns[0].replace(/['"]+/g, '').trim();  // Remove quotes and trim spaces
+                if (extension === 'csv' || extension === 'txt') {
+                    lines = content.split('\n');
                 } else {
-                    runnerName = line.replace(/['"]+/g, '').trim();  // For TXT, just remove quotes and trim spaces
+                    alert("Invalid file type. Please upload a CSV or TXT file.");
+                    return;
                 }
 
-                if (runnerName) {
-                    addRunner(runnerName);  // Add the runner to the list
-                }
-            });
-        };
-        reader.readAsText(file);
-    }
-});
+                lines.forEach(line => {
+                    let runnerName = line.trim();
+                    if (runnerName) {
+                        addRunner(runnerName);
+                    }
+                });
+            };
+            reader.readAsText(file);
+        }
+    });
 
     // Function to start the race
     function startRace() {
@@ -266,14 +271,14 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
             alert('Please add at least one runner before starting the race.');
             return;
         }
-        
-        // If a race is already running, stop it
+
+        // Stop any previous timer
         if (interval) {
-            clearInterval(interval);  // Stop the previous timer
+            clearInterval(interval);
         }
 
         startTime = Date.now();  // Capture the new start time
-        interval = setInterval(updateTimers, 100);  // Start updating the timers again
+        interval = setInterval(updateTimers, 100);
     }
 
     // Function to update the timers for each runner
@@ -294,16 +299,19 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
             const elapsedTime = currentTime - startTime;
             runners[index].time = elapsedTime;
             runners[index].isRunning = false;
-            
+
             // Update the timer display
             document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
-            
+
             // Change the "Stop" button to "Done" and change its color to grey
             const stopButton = document.getElementById(`stopButton-${index}`);
             stopButton.textContent = 'Done';
             stopButton.classList.remove('stopButton');
             stopButton.classList.add('doneButton');
             stopButton.disabled = true;
+
+            // Save updated runners to localStorage
+            saveToLocalStorage();
         }
     }
 
@@ -318,20 +326,19 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
 
     // Function to reset only the timers
     function resetTimes() {
-        clearInterval(interval);  // Stop the timers from updating
-
+        clearInterval(interval);
         runners.forEach((runner, index) => {
-            runner.time = null;  // Reset the internal time
-            runner.isRunning = true;  // Allow timers to start again
-            document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
+            runner.time = null;
+            runner.isRunning = true;
+            document.getElementById(`timer-${index}`).textContent = '00:00:00';
             const stopButton = document.getElementById(`stopButton-${index}`);
-            stopButton.textContent = 'Stop';  // Reset button text
+            stopButton.textContent = 'Stop';
             stopButton.classList.remove('doneButton');
             stopButton.classList.add('stopButton');
-            stopButton.disabled = false;  // Re-enable the stop button
+            stopButton.disabled = false;
         });
-
-        startTime = null;  // Clear the start time
+        startTime = null;
+        saveToLocalStorage();  // Save the reset state
     }
 
     // Function to reset the list of runners
@@ -339,6 +346,7 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
         clearInterval(interval);
         runners = [];
         renderRunners();
+        localStorage.removeItem('runners');  // Clear the saved runners
     }
 
     // Function to export data to CSV
@@ -363,9 +371,7 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
     }
 
     // Function to export data to a TXT file
-    function exportToTxt()
-
-{
+    function exportToTxt() {
         const classPeriod = document.getElementById('classPeriod').value.trim();
         let fileName = classPeriod ? `runners_times_${classPeriod}.txt` : 'runners_times.txt';
 
@@ -374,7 +380,6 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
             if (!runner.isRunning && runner.time !== null) {
                 txtContent += `${runner.name}\t\t${formatTime(runner.time)}\n`;
             }
-
         });
 
         const blob = new Blob([txtContent], { type: 'text/plain' });
@@ -391,9 +396,13 @@ document.getElementById('importRunnersButton').addEventListener('click', () => {
     document.getElementById('exportCsvButton').addEventListener('click', exportToCsv);
     document.getElementById('exportTxtButton').addEventListener('click', exportToTxt);
 
+    // Load the saved runners on page load
+    window.addEventListener('load', loadFromLocalStorage);
+
     // Initialize the app by rendering any existing runners
     renderRunners();
 </script>
+
 
 </body>
 </html>
