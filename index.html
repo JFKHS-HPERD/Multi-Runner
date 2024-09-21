@@ -164,6 +164,13 @@
     let startTime;
     let interval;
 
+    // Prevent accidental page refresh or close
+window.addEventListener('beforeunload', (event) => {
+    event.preventDefault();
+    event.returnValue = '';  // Shows a confirmation dialog to the user
+});
+
+    
     // Function to render the list of runners
     function renderRunners() {
         const tbody = document.getElementById('runnerTableBody');
