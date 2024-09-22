@@ -272,13 +272,18 @@
             return;
         }
 
+        // Disable the Start Button and change its appearance
+        const startButton = document.getElementById('startButton');
+        startButton.disabled = true;
+        startButton.classList.add('disabled');
+
         // Stop any previous timer
         if (interval) {
             clearInterval(interval);
         }
 
         startTime = Date.now();  // Capture the new start time
-        interval = setInterval(updateTimers, 100);
+        interval = setInterval(updateTimers, 100);  // Start updating the timers
     }
 
     // Function to update the timers for each runner
@@ -324,20 +329,28 @@
         return `${hours}:${minutes}:${seconds}`;
     }
 
-    // Function to reset only the timers
+    // Function to reset only the timers (and re-enable the start button)
     function resetTimes() {
-        clearInterval(interval);
+        clearInterval(interval);  // Stop the timers from updating
+
         runners.forEach((runner, index) => {
-            runner.time = null;
-            runner.isRunning = true;
-            document.getElementById(`timer-${index}`).textContent = '00:00:00';
+            runner.time = null;  // Reset the internal time
+            runner.isRunning = true;  // Allow timers to start again
+            document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
             const stopButton = document.getElementById(`stopButton-${index}`);
-            stopButton.textContent = 'Stop';
+            stopButton.textContent = 'Stop';  // Reset button text
             stopButton.classList.remove('doneButton');
             stopButton.classList.add('stopButton');
-            stopButton.disabled = false;
+            stopButton.disabled = false;  // Re-enable the stop button
         });
-        startTime = null;
+
+        startTime = null;  // Clear the start time
+
+        // Re-enable the Start Button
+        const startButton = document.getElementById('startButton');
+        startButton.disabled = false;
+        startButton.classList.remove('disabled');
+
         saveToLocalStorage();  // Save the reset state
     }
 
