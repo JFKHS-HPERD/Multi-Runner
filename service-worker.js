@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Multi-runner-timing-app-v1.01';
+const CACHE_NAME = 'Multi-runner-timing-app-v1.02';
 const urlsToCache = [
   '/Multi-Runner/',
   '/Multi-Runner/index.html',
