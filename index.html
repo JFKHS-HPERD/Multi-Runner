@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multiple Runners Timer</title>
-    <style>
+  <link rel="manifest" href="/Multi-Runner/manifest.json">
+  <style>
        .banner-container {
     display: flex;
     justify-content: center; /* Center the content horizontally */
@@ -164,7 +165,28 @@
     <div class="footer">
   <p>&#169; 2024 Lewie Tenorio</p>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script>
+    // Service Worker registration logic
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+            registration.onupdatefound = () => {
+                const newWorker = registration.installing;
+
+                newWorker.onstatechange = () => {
+                    if (newWorker.state === 'installed') {
+                        if (navigator.serviceWorker.controller) {
+                            console.log("New update available. Please refresh.");
+                            alert("A new version of the app is available. Please refresh the page to update.");
+                        } else {
+                            console.log("App is ready to work offline.");
+                        }
+                    }
+                };
+            };
+        });
+    }
+
     let runners = [];
     let startTime;
     let interval;
@@ -241,32 +263,29 @@
         }
     });
 
-    // Import list of runners from CSV or TXT file
+    // Import list of runners from CSV or TXT file using PapaParse
     document.getElementById('importRunnersButton').addEventListener('click', () => {
         const fileInput = document.getElementById('importRunnersFile');
         const file = fileInput.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                const extension = file.name.split('.').pop().toLowerCase();
-                let lines;
-
-                if (extension === 'csv' || extension === 'txt') {
-                    lines = content.split('\n');
-                } else {
-                    alert("Invalid file type. Please upload a CSV or TXT file.");
-                    return;
+            Papa.parse(file, {
+                complete: function(results) {
+                    results.data.forEach(row => {
+                        let runnerName = row[0].trim();  // Assuming runner name is in the first column
+                        if (runnerName) {
+                            addRunner(runnerName);
+                        }
+                    });
+                    
+                    // Disable the "Import Runners" button after loading CSV
+                    document.getElementById('importRunnersButton').disabled = true;
+                    console.log('Runners loaded and button disabled.');
+                },
+                error: function(err) {
+                    console.error('Error parsing CSV:', err);
+                    alert('There was an error parsing the file. Please ensure it is in CSV or TXT format.');
                 }
-
-                lines.forEach(line => {
-                    let runnerName = line.trim();
-                    if (runnerName) {
-                        addRunner(runnerName);
-                    }
-                });
-            };
-            reader.readAsText(file);
+            });
         }
     });
 
@@ -395,7 +414,7 @@
 
         let txtContent = "Name\t\tTime\n";
         runners.forEach(runner => {
-            if (!runner.isRunning && runner.time !== null) {
+            if (!runner isRunning && runner.time !== null) {
                 txtContent += `${runner.name}\t\t${formatTime(runner.time)}\n`;
             }
         });
@@ -420,6 +439,7 @@
     // Initialize the app by rendering any existing runners
     renderRunners();
 </script>
+
 
 
 </body>
