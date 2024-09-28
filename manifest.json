@@ -1,6 +1,6 @@
 {
-  "name": "Sprint Timing App",
-  "short_name": "SprintApp",
+  "name": "Mulit-Runner Timing App",
+  "short_name": "Mulit-Runner",
   "description": "A mobile-friendly multi-runner timing app for PE classes.",
   "start_url": "/Multi-Runner/index.html",  // Adjust the start URL to your app's entry point
   "display": "standalone",
