@@ -263,31 +263,56 @@
         }
     });
 
-    // Import list of runners from CSV or TXT file using PapaParse
-    document.getElementById('importRunnersButton').addEventListener('click', () => {
-        const fileInput = document.getElementById('importRunnersFile');
-        const file = fileInput.files[0];
-        if (file) {
-            Papa.parse(file, {
-                complete: function(results) {
-                    results.data.forEach(row => {
-                        let runnerName = row[0].trim();  // Assuming runner name is in the first column
-                        if (runnerName) {
-                            addRunner(runnerName);
-                        }
-                    });
-                    
-                    // Disable the "Import Runners" button after loading CSV
-                    document.getElementById('importRunnersButton').disabled = true;
-                    console.log('Runners loaded and button disabled.');
-                },
-                error: function(err) {
-                    console.error('Error parsing CSV:', err);
-                    alert('There was an error parsing the file. Please ensure it is in CSV or TXT format.');
-                }
-            });
-        }
-    });
+    // Add runner via input field
+document.getElementById('addRunnerButton').addEventListener('click', addRunnerFunction);
+document.getElementById('addRunnerButton').addEventListener('touchstart', addRunnerFunction);  // Mobile touch support
+
+// Import runners
+document.getElementById('importRunnersButton').addEventListener('click', importRunnersFunction);
+document.getElementById('importRunnersButton').addEventListener('touchstart', importRunnersFunction);  // Mobile touch support
+
+function addRunnerFunction() {
+    console.log('Add Runner Button Clicked');
+    const runnerNameInput = document.getElementById('runnerName');
+    const runnerName = runnerNameInput.value.trim();
+    if (runnerName) {
+        addRunner(runnerName);
+        runnerNameInput.value = ''; // Clear input field
+    } else {
+        console.log('No runner name entered.');
+    }
+}
+
+function importRunnersFunction() {
+    console.log('Import Runners Button Clicked');
+    const fileInput = document.getElementById('importRunnersFile');
+    const file = fileInput.files[0];
+    if (file) {
+        console.log('File selected:', file.name);
+        Papa.parse(file, {
+            complete: function(results) {
+                results.data.forEach(row => {
+                    let runnerName = row[0].trim();  // Assuming runner name is in the first column
+                    if (runnerName) {
+                        addRunner(runnerName);
+                    }
+                });
+                
+                // Disable the "Import Runners" button after loading CSV
+                document.getElementById('importRunnersButton').disabled = true;
+                console.log('Runners loaded and button disabled.');
+            },
+            error: function(err) {
+                console.error('Error parsing CSV:', err);
+                alert('There was an error parsing the file. Please ensure it is in CSV or TXT format.');
+            }
+        });
+    } else {
+        console.log('No file selected.');
+    }
+}
+
+
 
     // Function to start the race
     function startRace() {
