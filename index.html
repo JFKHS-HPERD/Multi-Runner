@@ -101,6 +101,9 @@
             color: white;
             text-align: right;
 }
+        .correct-time-input {
+            width: 80px;
+        }
     </style>
 </head>
 <body>
@@ -213,9 +216,19 @@
             timerTd.id = `timer-${index}`;
             timerTd.textContent = runner.time ? formatTime(runner.time) : '00:00:00';
 
+            const stopButtonTd = document.createElement('td');
+            const stopButton = document.createElement('button');
+            stopButton.classList.add(runner.isRunning ? 'stopButton' : 'doneButton');
+            stopButton.id = `stopButton-${index}`;
+            stopButton.textContent = runner.isRunning ? 'Stop' : 'Done';
+            stopButton.disabled = !runner.isRunning;
+            stopButton.addEventListener('click', () => stopTimer(index));
+            stopButtonTd.appendChild(stopButton);
+
             const correctTimeTd = document.createElement('td');
             const correctTimeInput = document.createElement('input');
             correctTimeInput.type = 'text';
+            correctTimeInput.classList.add('correct-time-input');
             correctTimeInput.placeholder = 'hh:mm:ss';
             correctTimeInput.addEventListener('change', () => {
                 runner.time = parseTime(correctTimeInput.value);
@@ -223,26 +236,19 @@
             });
             correctTimeTd.appendChild(correctTimeInput);
 
-            const buttonTd = document.createElement('td');
-            const stopButton = document.createElement('button');
-            stopButton.classList.add(runner.isRunning ? 'stopButton' : 'doneButton');
-            stopButton.id = `stopButton-${index}`;
-            stopButton.textContent = runner.isRunning ? 'Stop' : 'Done';
-            stopButton.disabled = !runner.isRunning;
-            stopButton.addEventListener('click', () => stopTimer(index));
-            buttonTd.appendChild(stopButton);
-
+            const deleteButtonTd = document.createElement('td');
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
             deleteButton.style.backgroundColor = 'darkred';
             deleteButton.style.color = 'white';
             deleteButton.addEventListener('click', () => deleteRunner(index));
-            buttonTd.appendChild(deleteButton);
+            deleteButtonTd.appendChild(deleteButton);
 
             row.appendChild(nameTd);
             row.appendChild(timerTd);
+            row.appendChild(stopButtonTd);
             row.appendChild(correctTimeTd);
-            row.appendChild(buttonTd);
+            row.appendChild(deleteButtonTd);
             tbody.appendChild(row);
         });
     }
