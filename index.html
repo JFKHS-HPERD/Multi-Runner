@@ -8,8 +8,8 @@
   <style>
        .banner-container {
     display: flex;
-    justify-content: center; /* Center the content horizontally */
-    margin: 20px 0; /* Optional: Add some margin for spacing */
+    justify-content: center;
+    margin: 20px 0;
 }
         .runner {
             margin-bottom: 10px;
@@ -28,7 +28,7 @@
 }
 
 .button-container button {
-    margin-left: 10px; /* Add some space between buttons */
+    margin-left: 10px;
 }
         
         #startButton {
@@ -37,7 +37,7 @@
         padding: 10px;
     }
         #startButton.disabled {
-        background-color: grey; /* Grey out when disabled */
+        background-color: grey;
         color: white;
         cursor: not-allowed;
     }
@@ -52,10 +52,12 @@
         .stopButton {
             background-color: red;
             color: white;
+            padding: 15px; /* Increase size for better contact */
         }
         .doneButton {
             background-color: grey;
             color: white;
+            padding: 15px;
         }
         button {
             margin-left: 10px;
@@ -72,15 +74,15 @@
         }
 
         .runner-table tr:nth-child(even) {
-            background-color: #f2f2f2; /* Light grey for even rows */
+            background-color: #f2f2f2;
         }
 
         .runner-table tr:nth-child(odd) {
-            background-color: #ffffff; /* White for odd rows */
+            background-color: #ffffff;
         }
 
         .runner-table tr:hover {
-            background-color: #ddd; /* Highlight row on hover */
+            background-color: #ddd;
         }
 
         .runner-table th {
@@ -135,7 +137,6 @@
     </div>
 </div>
 
-
 <br><br>
 
 <!-- Runner list in a table format -->
@@ -145,6 +146,7 @@
         <tr>
             <th>Runner Name</th>
             <th>Timer</th>
+            <th>Correct Time</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -166,21 +168,17 @@
   <p>&#169; 2024 Lewie Tenorio</p>
     </div>
 <script>
-
     // Service Worker registration logic
     if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js').then((registration) => {
     registration.onupdatefound = () => {
       const newWorker = registration.installing;
-
       newWorker.onstatechange = () => {
         if (newWorker.state === 'installed') {
           if (navigator.serviceWorker.controller) {
-            // A new service worker is available, show a notification to the user
             console.log("New update available. Please refresh.");
             alert("A new version of the app is available. Please refresh the page to update.");
           } else {
-            // The page is being loaded for the first time
             console.log("App is ready to work offline.");
           }
         }
@@ -193,16 +191,15 @@
     let startTime;
     let interval;
 
-    // Prevent accidental page refresh or close
     window.addEventListener('beforeunload', (event) => {
         event.preventDefault();
-        event.returnValue = '';  // Shows a confirmation dialog to the user
+        event.returnValue = '';
     });
 
     // Function to render the list of runners
     function renderRunners() {
         const tbody = document.getElementById('runnerTableBody');
-        tbody.innerHTML = ''; // Clear previous content
+        tbody.innerHTML = '';
 
         runners.forEach((runner, index) => {
             const row = document.createElement('tr');
@@ -216,6 +213,16 @@
             timerTd.id = `timer-${index}`;
             timerTd.textContent = runner.time ? formatTime(runner.time) : '00:00:00';
 
+            const correctTimeTd = document.createElement('td');
+            const correctTimeInput = document.createElement('input');
+            correctTimeInput.type = 'text';
+            correctTimeInput.placeholder = 'hh:mm:ss';
+            correctTimeInput.addEventListener('change', () => {
+                runner.time = parseTime(correctTimeInput.value);
+                renderRunners();
+            });
+            correctTimeTd.appendChild(correctTimeInput);
+
             const buttonTd = document.createElement('td');
             const stopButton = document.createElement('button');
             stopButton.classList.add(runner.isRunning ? 'stopButton' : 'doneButton');
@@ -225,8 +232,16 @@
             stopButton.addEventListener('click', () => stopTimer(index));
             buttonTd.appendChild(stopButton);
 
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.style.backgroundColor = 'darkred';
+            deleteButton.style.color = 'white';
+            deleteButton.addEventListener('click', () => deleteRunner(index));
+            buttonTd.appendChild(deleteButton);
+
             row.appendChild(nameTd);
             row.appendChild(timerTd);
+            row.appendChild(correctTimeTd);
             row.appendChild(buttonTd);
             tbody.appendChild(row);
         });
@@ -261,7 +276,7 @@
         const runnerName = runnerNameInput.value.trim();
         if (runnerName) {
             addRunner(runnerName);
-            runnerNameInput.value = ''; // Clear input field
+            runnerNameInput.value = '';
         }
     });
 
@@ -301,18 +316,16 @@
             return;
         }
 
-        // Disable the Start Button and change its appearance
         const startButton = document.getElementById('startButton');
         startButton.disabled = true;
         startButton.classList.add('disabled');
 
-        // Stop any previous timer
         if (interval) {
             clearInterval(interval);
         }
 
-        startTime = Date.now();  // Capture the new start time
-        interval = setInterval(updateTimers, 100);  // Start updating the timers
+        startTime = Date.now();
+        interval = setInterval(updateTimers, 100);
     }
 
     // Function to update the timers for each runner
@@ -334,19 +347,21 @@
             runners[index].time = elapsedTime;
             runners[index].isRunning = false;
 
-            // Update the timer display
-            document.getElementById(`timer-${index}`).textContent = formatTime(elapsedTime);
-
-            // Change the "Stop" button to "Done" and change its color to grey
-            const stopButton = document.getElementById(`stopButton-${index}`);
-            stopButton.textContent = 'Done';
-            stopButton.classList.remove('stopButton');
-            stopButton.classList.add('doneButton');
-            stopButton.disabled = true;
-
-            // Save updated runners to localStorage
+            renderRunners();
             saveToLocalStorage();
         }
+    }
+
+    // Function to parse time from hh:mm:ss
+    function parseTime(timeString) {
+        const parts = timeString.split(':');
+        if (parts.length === 3) {
+            const hours = parseInt(parts[0], 10);
+            const minutes = parseInt(parts[1], 10);
+            const seconds = parseInt(parts[2], 10);
+            return ((hours * 3600) + (minutes * 60) + seconds) * 1000;
+        }
+        return null;
     }
 
     // Function to format time (milliseconds to hh:mm:ss)
@@ -358,29 +373,30 @@
         return `${hours}:${minutes}:${seconds}`;
     }
 
+    // Function to delete a runner
+    function deleteRunner(index) {
+        runners.splice(index, 1);
+        renderRunners();
+        saveToLocalStorage();
+    }
+
     // Function to reset only the timers (and re-enable the start button)
     function resetTimes() {
-        clearInterval(interval);  // Stop the timers from updating
+        clearInterval(interval);
 
         runners.forEach((runner, index) => {
-            runner.time = null;  // Reset the internal time
-            runner.isRunning = true;  // Allow timers to start again
-            document.getElementById(`timer-${index}`).textContent = '00:00:00';  // Reset display
-            const stopButton = document.getElementById(`stopButton-${index}`);
-            stopButton.textContent = 'Stop';  // Reset button text
-            stopButton.classList.remove('doneButton');
-            stopButton.classList.add('stopButton');
-            stopButton.disabled = false;  // Re-enable the stop button
+            runner.time = null;
+            runner.isRunning = true;
         });
 
-        startTime = null;  // Clear the start time
+        startTime = null;
 
-        // Re-enable the Start Button
         const startButton = document.getElementById('startButton');
         startButton.disabled = false;
         startButton.classList.remove('disabled');
 
-        saveToLocalStorage();  // Save the reset state
+        renderRunners();
+        saveToLocalStorage();
     }
 
     // Function to reset the list of runners
@@ -388,48 +404,11 @@
         clearInterval(interval);
         runners = [];
         renderRunners();
-        localStorage.removeItem('runners');  // Clear the saved runners
+        localStorage.removeItem('runners');
     }
 
-    // Function to export data to CSV
-    function exportToCsv() {
-        const classPeriod = document.getElementById('classPeriod').value.trim();
-        let fileName = classPeriod ? `runners_times_${classPeriod}.csv` : 'runners_times.csv';
-
-        let csvContent = "data:text/csv;charset=utf-8,Name,Time\n";
-        runners.forEach(runner => {
-            if (!runner.isRunning && runner.time !== null) {
-                csvContent += `${runner.name},${formatTime(runner.time)}\n`;
-            }
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link); // Required for Firefox
-        link.click();
-        link.remove();
-    }
-
-    // Function to export data to a TXT file
-    function exportToTxt() {
-        const classPeriod = document.getElementById('classPeriod').value.trim();
-        let fileName = classPeriod ? `runners_times_${classPeriod}.txt` : 'runners_times.txt';
-
-        let txtContent = "Name\t\tTime\n";
-        runners.forEach(runner => {
-            if (!runner.isRunning && runner.time !== null) {
-                txtContent += `${runner.name}\t\t${formatTime(runner.time)}\n`;
-            }
-        });
-
-        const blob = new Blob([txtContent], { type: 'text/plain' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;
-        link.click();
-    }
+    // Load the saved runners on page load
+    window.addEventListener('load', loadFromLocalStorage);
 
     // Event listeners for buttons
     document.getElementById('startButton').addEventListener('click', startRace);
@@ -437,14 +416,7 @@
     document.getElementById('resetListButton').addEventListener('click', resetList);
     document.getElementById('exportCsvButton').addEventListener('click', exportToCsv);
     document.getElementById('exportTxtButton').addEventListener('click', exportToTxt);
-
-    // Load the saved runners on page load
-    window.addEventListener('load', loadFromLocalStorage);
-
-    // Initialize the app by rendering any existing runners
-    renderRunners();
 </script>
-
 
 </body>
 </html>
