@@ -149,8 +149,8 @@
         <tr>
             <th>Runner Name</th>
             <th>Timer</th>
-            <th>Correct Time</th>
             <th>Action</th>
+            <th>Correct Time</th>
         </tr>
     </thead>
     <tbody id="runnerTableBody">
@@ -411,6 +411,46 @@
         runners = [];
         renderRunners();
         localStorage.removeItem('runners');
+    }
+
+    // Function to export data to CSV
+    function exportToCsv() {
+        const classPeriod = document.getElementById('classPeriod').value.trim();
+        let fileName = classPeriod ? `runners_times_${classPeriod}.csv` : 'runners_times.csv';
+
+        let csvContent = "data:text/csv;charset=utf-8,Name,Time\n";
+        runners.forEach(runner => {
+            if (!runner.isRunning && runner.time !== null) {
+                csvContent += `${runner.name},${formatTime(runner.time)}\n`;
+            }
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+        link.remove();
+    }
+
+    // Function to export data to a TXT file
+    function exportToTxt() {
+        const classPeriod = document.getElementById('classPeriod').value.trim();
+        let fileName = classPeriod ? `runners_times_${classPeriod}.txt` : 'runners_times.txt';
+
+        let txtContent = "Name\t\tTime\n";
+        runners.forEach(runner => {
+            if (!runner.isRunning && runner.time !== null) {
+                txtContent += `${runner.name}\t\t${formatTime(runner.time)}\n`;
+            }
+        });
+
+        const blob = new Blob([txtContent], { type: 'text/plain' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
     }
 
     // Load the saved runners on page load
